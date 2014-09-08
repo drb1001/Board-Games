@@ -1,0 +1,12 @@
+### PyCharm ###
+
+## Directory-based project format
+.idea/
+
+## Python compiled files
+*.pyc
+
+# ignore large files / folders
+*.zip
+*.jpg
+*.png
