@@ -1,0 +1,15 @@
+## LUDO RULES:
+
+# 2-4 players
+# 4 pieces each player
+# 4 yard (start) squares, one for each player
+# roll a dice at the start of the turn, move the number of spaces on the dice
+# roll 6 means another go (only if you have valid move)
+# land on top of opponent means the other piece goes back to yard (start)
+# roll 6 to exit yard (start), this moves one square (then roll again because it's a 6)
+# if you can't make a move (eg not a 6 at the start) it goes to the next player
+# Once a piece passes the finish line it is home and can't move again (it doesn't an need exact roll)
+# First player to have all 4 pieces home is winner
+
+
+# http://en.wikipedia.org/wiki/Ludo_(board_game)
