@@ -15,10 +15,25 @@ evilgrid.print_me()
 
 print "\nStart: "
 
-for iter in range(0,10):
-    print "\niteration: " + str(iter)
+for grid_pass in range(1, 100):
+    print "\n* iteration: " + str(grid_pass)
+
     evilgrid.update_notpossibles()
     evilgrid.print_me()
+    print "completed: update not possibles, iteration: " + str(grid_pass)
+
+    evilgrid.update_rows_check()
+    evilgrid.print_me()
+    print "completed: update rows check, iteration: " + str(grid_pass)
+
+    evilgrid.update_cols_check()
+    evilgrid.print_me()
+    print "completed: update columns check, iteration: " + str(grid_pass)
+
+    evilgrid.update_box_check()
+    evilgrid.print_me()
+    print "complete: update box check, iteration: " + str(grid_pass)
+
 
 print "\nValidating solution..."
 evilgrid.validate()
