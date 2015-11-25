@@ -63,6 +63,30 @@ class Group(object):
         for cell in self.cells:
             cell.print_cell()
 
+    def update_group_check(self):
+        for test_n in range(1, 10):
+            counter = 0
+            skip = False
+            for cell in self.cells:
+                if cell.contents == test_n:
+                    skip = True
+                if cell.possibles[test_n]:
+                    counter += 1
+            if counter == 1 and skip == False:
+                for cell in self.cells:
+                    if cell.possibles[test_n]:
+                        cell.set_contents(test_n)
+
+    def update_group_doubles(self):
+        for cell in self.cells:
+            if len( cell.get_possibles() ) == 2:
+                double_array = cell.get_possibles()
+                for cell_2 in self.cells:
+                    if ( cell_2 != cell ) and ( double_array == cell_2.get_possibles() ):
+                        for cell_others in self.cells:
+                            if cell_others != cell_2 and cell_others != cell:
+                                cell_others.set_notpossible(double_array)
+
     def validate(self):
         check_array = []
         for cell in self.cells:
@@ -97,6 +121,30 @@ class Grid(object):
         flat_array = [x for row in square_array for x in row]
         return Grid(flat_array)
 
+    def set_groups(self):
+        self.groups = []
+        # rows
+        for start_pos in range(0, 9):
+            row_group = []
+            for step in range(0, 9):
+                row_group.append( self.cells[(start_pos * 9 + step)] )
+            temp_group = Group(row_group , "row %s" %str(start_pos+1))
+            self.groups.append( temp_group )
+        # cols
+        for start_pos in range(0, 9):
+            col_group = []
+            for step in range(0, 9):
+                col_group.append( self.cells[(start_pos + step * 9)] )
+                temp_group = Group(col_group , "col %s" %str(start_pos+1))
+            self.groups.append( temp_group )
+        # boxes
+        for start_pos in [0,3,6,27,30,33,54,57,60]:
+            box_group = []
+            for step in [0,1,2,9,10,11,18,19,20]:
+                box_group.append( self.cells[ start_pos + step ] )
+                temp_group = Group(box_group , "box %s" %start_pos)
+            self.groups.append( temp_group )
+
     def print_me(self):
         print " ----- ----- -----"
         for row_i in range(0, 9):
@@ -105,8 +153,8 @@ class Grid(object):
                 seperator = " "
                 if col_j % 3 == 2:
                     seperator = "|"
-                if self.cells[row_i][col_j].is_known():
-                    row_string += str(self.cells[row_i][col_j].contents) + seperator
+                if self.cells[row_i * 9 + col_j].is_known():
+                    row_string += str(self.cells[row_i * 9 + col_j].contents) + seperator
                 else:
                     row_string += " " + seperator
             print row_string
@@ -114,101 +162,37 @@ class Grid(object):
                 print " ----- ----- -----"
 
     def update_notpossibles(self):
-        for row_i in range(0, 9):
-            for col_j in range(0, 9):
-                if self.cells[row_i][col_j].is_known():
-                    continue
+        for cell in self.cells:
+            if cell.is_known():
+                continue
+            for group in self.groups:
+                if group.contains_cell(cell):
+                    for grp_cell in group.cells:
+                        if grp_cell.is_known():
+                            cell.set_notpossible( [ grp_cell.contents ] )
 
-                # check the row
-                row_array = []
-                for col_cell in range(0, 9):
-                    if self.cells[row_i][col_cell].is_known() and col_cell != col_j:
-                        row_array.append(self.cells[row_i][col_cell].contents)
-                self.cells[row_i][col_j].set_notpossible(row_array)
+    def update_groups_check(self):
+        for group in self.groups:
+            group.update_group_check()
 
-                # check the col
-                col_array = []
-                for row_cell in range(0, 9):
-                    if self.cells[row_cell][col_j].is_known() and row_cell != row_i:
-                        col_array.append(self.cells[row_cell][col_j].contents)
-                self.cells[row_i][col_j].set_notpossible(col_array)
+    def update_groups_doubles(self):
+        for group in self.groups:
+            group.update_group_doubles()
 
-                # check box
-                box_array = []
-                for row_cell in range(row_i//3 * 3, row_i//3 * 3 + 3):
-                    for col_cell in range(col_j//3 * 3, col_j//3 * 3 + 3):
-                        if self.cells[row_cell][col_cell].is_known() and row_cell != row_i and col_cell != col_j:
-                            box_array.append(self.cells[row_cell][col_cell].contents)
-                self.cells[row_i][col_j].set_notpossible(box_array)
-
-    def update_rows_check(self):
-        for row_i in range(0, 9):
-            for test_n in range(1, 10):
-                counter = 0
-                for col_j in range(0, 9):
-                    if self.cells[row_i][col_j].possibles[test_n]:
-                        counter += 1
-                if counter == 1:
-                    for col_j in range(0, 9):
-                        if self.cells[row_i][col_j].possibles[test_n]:
-                            self.cells[row_i][col_j].set_contents(test_n)
-                            break
-
-    def update_cols_check(self):
-        for col_j in range(0, 9):
-            for test_n in range(1, 10):
-                counter = 0
-                for row_i in range(0, 9):
-                    if self.cells[row_i][col_j].possibles[test_n]:
-                        counter += 1
-                if counter == 1:
-                    for row_i in range(0, 9):
-                        if self.cells[row_i][col_j].possibles[test_n]:
-                            self.cells[row_i][col_j].set_contents(test_n)
-                            break
-
-    def update_box_check(self):
-        for box_row in range(0, 9, 3):
-            for box_col in range(0, 9, 3):
-                for test_n in range(1, 10):
-                    counter = 0
-                    for row_cell in range(0, 3):
-                        for col_cell in range(0, 3):
-                            if self.cells[box_row + row_cell][box_col + col_cell].possibles[test_n]:
-                                counter += 1
-                    if counter == 1:
-                        for row_cell in range(0, 3):
-                            for col_cell in range(0, 3):
-                                if self.cells[box_row + row_cell][box_col + col_cell].possibles[test_n]:
-                                    self.cells[box_row + row_cell][box_col + col_cell].set_contents(test_n)
+    def is_grid_filled(self):
+        for cell in self.cells:
+            if not cell.is_known():
+                return False
+        return True
 
     def validate(self):
         # no empty cells
-        for row_i in range(0, 9):
-            for col_j in range(0, 9):
-                if not self.cells[row_i][col_j].is_known():
-                    print "invalid solution - incomplete grid"
-                    return False
-        # check rows are valid (one of each 1-9)
-        for row_i in range(0, 9):
-            check_array = []
-            for col_j in range(0, 9):
-                check_array.append(self.cells[row_i][col_j].contents)
-            check_array = sorted(check_array)
-            if check_array != [1, 2, 3, 4, 5, 6, 7, 8, 9]:
-                print "invalid solution  - row is incorrect: ", row_i
-                return False
-        # check columns are valid (one of each 1-9)
-        for col_j in range(0, 9):
-            check_array = []
-            for row_i in range(0, 9):
-                check_array.append(self.cells[row_i][col_j].contents)
-            check_array = sorted(check_array)
-            if check_array != [1, 2, 3, 4, 5, 6, 7, 8, 9]:
-                print "invalid solution  - row is incorrect: ", col_j
-                return False
-        # check boxes are valid (one of each 1-9) TBD
-
+        if not self.is_grid_filled():
+            return ( False , "invalid solution - incomplete grid")
+        # check groups are valid (one of each 1-9)
+        for group in self.groups:
+            is_grp_valid, grp_valid_msg = group.validate()
+            if not is_grp_valid:
+                return (is_grp_valid , grp_valid_msg)
         else:
-            print "This is a valid solution"
-            return True
+            return ( True , "This is a valid solution" )
