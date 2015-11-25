@@ -42,6 +42,37 @@ class Cell(object):
         if not self.is_known(): print self.get_possibles()
 
 
+class Group(object):
+
+    ## vars:
+    # cells[] = array of 9 Cell objects
+    # label = string, describing the type of group
+
+    def __init__(self , cells_array, label):
+        self.cells = cells_array
+        self.label = label
+
+    def contains_cell(self, cell):
+        for grp_cell in self.cells:
+                if cell is grp_cell:
+                    return True
+        return False
+
+    def print_group(self):
+        print "  printing group: %s" %self.label
+        for cell in self.cells:
+            cell.print_cell()
+
+    def validate(self):
+        check_array = []
+        for cell in self.cells:
+            check_array.append( cell.contents )
+        check_array = sorted(check_array)
+        if check_array != [1, 2, 3, 4, 5, 6, 7, 8, 9]:
+            return ( False , "Invalid solution  - %s group is incorrect" %self.label )
+        else:
+            return ( True , "This group is valid" )
+
 
 class Grid(object):
     def __init__(self):
