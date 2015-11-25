@@ -75,18 +75,27 @@ class Group(object):
 
 
 class Grid(object):
-    def __init__(self):
-        self.cells = []
-        for i in range(0, 9):
-            temp_r = []
-            for j in range(0, 9):
-                c = Cell(0)
-                temp_r.append(c)
-            self.cells.append(temp_r)
 
-    def set_row(self, row, num_array):
-        for i in range(0, 9):
-            self.cells[row - 1][i].set_contents(num_array[i])
+    ## vars:
+    # cells[] = array of 81 Cell objects (as top right to bottom left)
+    # groups[] = array of 27 group objects (9 rows, 9 columns, 9 boxes)
+
+    def __init__(self, flat_array = [Cell(0)]*81):
+        self.cells = []
+        for x in flat_array:
+            self.cells.append( Cell(x) )
+        self.set_groups()
+
+    @classmethod
+    def from_string(cls, sudokustring):
+        a = list(sudokustring)
+        flat_array = [0 if x == "." else int(x) for x in a]
+        return Grid(flat_array)
+
+    @classmethod
+    def from_square_array(cls, square_array):
+        flat_array = [x for row in square_array for x in row]
+        return Grid(flat_array)
 
     def print_me(self):
         print " ----- ----- -----"
