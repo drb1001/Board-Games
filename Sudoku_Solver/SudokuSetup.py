@@ -32,14 +32,15 @@ class Cell(object):
             self.set_contents(self.get_possibles()[0])
 
     def get_possibles(self):
-        output = []
-        for i in range(0, 10):
-            if self.possibles[i]:
-                output.append(i)
-        return output
+        return [ i for i in range(0,10) if self.possibles[i] ]
 
     def count_possibles(self):
-        return len(self.get_possibles())
+        return len( self.get_possibles() )
+
+    def print_cell(self):
+        if self.is_known(): print self.contents
+        if not self.is_known(): print self.get_possibles()
+
 
 
 class Grid(object):
