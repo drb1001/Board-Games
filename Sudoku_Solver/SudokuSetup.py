@@ -196,3 +196,25 @@ class Grid(object):
                 return (is_grp_valid , grp_valid_msg)
         else:
             return ( True , "This is a valid solution" )
+
+    def solve(self, max_iters = 10, verbose = 0):
+        print "\nStart: "
+        self.print_me()
+        for iter in range(0, max_iters):
+            if verbose >= 1: print "\niteration: " + str(iter)
+            self.update_notpossibles()
+            if verbose >= 2: print "completed step 'update not possibles', iteration: " + str(iter)
+            if verbose >= 2: self.print_me()
+            self.update_groups_check()
+            if verbose >= 2: print "completed step 'update groups check', iteration: " + str(iter)
+            if verbose >= 2: self.print_me()
+            self.update_groups_doubles()
+            if verbose >= 2: print "complete step 'update groups doubles', iteration: " + str(iter)
+            if verbose >= 1: self.print_me()
+            if self.is_grid_filled():
+                print "\nPuzzle Complete (on iteration %s):" %iter
+                break
+        self.print_me()
+        print "Validating solution..."
+        is_valid, valid_msg = self.validate()
+        print valid_msg
