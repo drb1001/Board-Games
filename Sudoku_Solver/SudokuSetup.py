@@ -1,4 +1,12 @@
+# thoughts:
+# Identify the next (easy) move
+
 class Cell(object):
+
+    ## vars:
+    # contents = int, 0 if unknown else (1-9) if content is known
+    # possibles[] =  array of bool x10 , possible numbers ( 0 == False, 1-9 : true = could be, false = not)
+
     def __init__(self, contents=0):
         self.set_contents(contents)
 
