@@ -21,7 +21,6 @@ print selection
 print "Your target is: %s" %str(target)
 
 
-solutions = []
 # solver: operations are: + - * /
 # todo: maybe try evolutionary example?
 #good examples:
@@ -29,8 +28,8 @@ solutions = []
 #[7, 2, 1, 3, 6, 5] -> 738
 
 # generate permutations:
-selection = selection + [0]
-permutations = itertools.permutations(selection)
+test_selection = selection + [0]
+permutations = itertools.permutations(test_selection)
 perms = list(permutations)
 
 perms_new = []
@@ -45,26 +44,60 @@ for p in perms:
 # print "unique permutations (`perms_new`) = %s" %str(len(set(perms_new)))
 
 
+def iter_solver(target, number_set, helper_str=""):
 
-# check each number
-for x1 in selection:
-    if x1 == target: solutions.append(str(x))
+    if target in number_set:
+        return ( target, (helper_str + "Done! ") )
+    elif len(number_set) == 0:
+        return ( -1, (helper_str + "No match, no answer. ") )
+    elif len(number_set) == 1 :
+        return ( number_set[0], (helper_str + "No match, " + str(abs(number_set[0]-target)) + " away. ") )
 
-# for x1,x2 in selection:
-#     if x1 + x2 == target: solutions.append(str(x1)+"+"+str(x2))
-#     if x1 * x2 == target: solutions.append(str(x1)+"*"+str(x2))
-#     if x1 - x2 == target: solutions.append(str(x1)+"-"+str(x2))
-#     if x2 - x1 == target: solutions.append(str(x2)+"-"+str(x1))
-#     if x1 / x2 == target: solutions.append(str(x1)+"/"+str(x2))
-#     if x2 / x1 == target: solutions.append(str(x2)+"/"+str(x1))
-#
-# for x1,x2,x3 in selection:
-#     if x1 + x2 + x3 == target: solutions.append(str(x1)+"+"+str(x2)+"+"+str(x3))
-#     if x1 * x2 * x3 == target: solutions.append(str(x1)+"*"+str(x2)+"+"+str(x3))
-#     if x1 - x2 == target: solutions.append(str(x1)+"-"+str(x2))
-#     if x2 - x1 == target: solutions.append(str(x2)+"-"+str(x1))
-#     if x1 / x2 == target: solutions.append(str(x1)+"/"+str(x2))
-#     if x2 / x1 == target: solutions.append(str(x2)+"/"+str(x1))
+    else:
+
+        temp_number_set = number_set[2:] + ( number_set[0] + number_set[1] , )
+        temp_helper_str = ( helper_str + "(%s + %s = %s). " %(number_set[0],  number_set[1], number_set[0]+number_set[1]) )
+        plus_solve, plus_solve_str = iter_solver(target, temp_number_set, temp_helper_str)
+        if plus_solve == target:
+            return (plus_solve, plus_solve_str)
+        else:
+            (max_solve, max_solve_str) = (plus_solve, plus_solve_str)
+
+        temp_number_set = number_set[2:] + ( number_set[0] * number_set[1] , )
+        temp_helper_str = ( helper_str + "(%s * %s = %s). " %(number_set[0], number_set[1], number_set[0]*number_set[1]) )
+        times_solve, times_solve_str = iter_solver(target, temp_number_set, temp_helper_str)
+        if times_solve == target:
+            return (times_solve, times_solve_str)
+        else:
+            if ( abs(max_solve-target) > abs(times_solve-target) ):
+                (max_solve, max_solve_str) = (times_solve, times_solve_str)
+
+        temp_number_set = number_set[2:] + ( number_set[0] - number_set[1] , )
+        temp_helper_str = ( helper_str + "(%s - %s = %s). " %(number_set[0], number_set[1], number_set[0]-number_set[1]) )
+        minus_solve, minus_solve_str = iter_solver(target, temp_number_set, temp_helper_str)
+        if minus_solve == target:
+            return (minus_solve, minus_solve_str)
+        else:
+            if ( abs(max_solve-target) > abs(minus_solve-target) ):
+                (max_solve, max_solve_str) = (minus_solve, minus_solve_str)
+
+    return (max_solve, max_solve_str)
 
 
+solutions = []
+best_result = 0
+best_result_str = ""
+best_result_len = 999
 
+for the_perm in perms_new:
+    result, result_string = iter_solver(target, the_perm)
+    if result == target:
+        solutions.append( { "result:" : result, "result_string" : result_string } )
+    if ( abs(best_result-target) > abs(result-target) ):
+        best_result = result
+        best_result_str = result_string
+        best_result_len = len(the_perm)
+    elif ( abs(best_result-target) == abs(result-target) and best_result_len > len(the_perm) ):
+        best_result = result
+        best_result_str = result_string
+        best_result_len = len(the_perm)
