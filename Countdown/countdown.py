@@ -1,4 +1,5 @@
 import random
+import time
 import itertools
 
 large_numbers = [25,50,75,100]
@@ -101,3 +102,15 @@ for the_perm in perms_new:
         best_result = result
         best_result_str = result_string
         best_result_len = len(the_perm)
+
+
+print "30 seconds starts now.."
+time.sleep(10)
+print "20 seconds left.."
+time.sleep(10)
+print "10 seconds left.."
+time.sleep(10)
+print "Time's up!\n"
+
+print "Computer's best result: %s. It found %s solutions." %(best_result, str(len(solutions)))
+print "The computer did: %s" %best_result_str
