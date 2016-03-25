@@ -4,10 +4,19 @@ import itertools
 large_numbers = [25,50,75,100]
 small_numbers = range(1,11)*2
 
-selection_large = random.sample( set(large_numbers), 1 )
-selection_small = random.sample( set(small_numbers), 5 )
-selection = selection_large + selection_small
 print selection
+# choose whether to pick random numbers, or to type in numbers, or a selection.
+large_count = raw_input("How many large numbers? (0-4): ")
+if large_count == "n":
+    target = int( raw_input("Enter your target: ") )
+    selection = raw_input("Enter your numbers (space seperated): ")
+    selection = [int(x) for x in selection.split()]
+else:
+    large_count = int(large_count)
+    selection_large = random.sample( large_numbers, large_count )
+    selection_small = random.sample( small_numbers, (6-large_count) )
+    selection = selection_large + selection_small
+    target = random.choice(range(101,1000))
 
 target = random.choice(range(101,1000))
 print target
