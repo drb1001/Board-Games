@@ -47,7 +47,9 @@ for p in perms:
 
 def iter_solver(target, number_set, helper_str=""):
 
-    if target in number_set:
+    if any(number < 0 for number in number_set):
+        return ( -1, (helper_str + "No match, negative result. ") )
+    elif target in number_set:
         return ( target, (helper_str + "Done! ") )
     elif len(number_set) == 0:
         return ( -1, (helper_str + "No match, no answer. ") )
@@ -104,13 +106,13 @@ for the_perm in perms_new:
         best_result_len = len(the_perm)
 
 
-print "30 seconds starts now.."
+print "    30 seconds starts now.."
 time.sleep(10)
-print "20 seconds left.."
+print "    20 seconds left.."
 time.sleep(10)
-print "10 seconds left.."
+print "    10 seconds left.."
 time.sleep(10)
-print "Time's up!\n"
+print "    Time's up!"
 
-print "Computer's best result: %s. It found %s solutions." %(best_result, str(len(solutions)))
+print "Computer's best result: %s (%s away). It found %s solutions." %( best_result, abs(best_result-target), str(len(solutions)) )
 print "The computer did: %s" %best_result_str
