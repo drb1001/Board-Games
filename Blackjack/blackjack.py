@@ -4,8 +4,8 @@
 # dealer hits on a soft 17
 
 
-## TODO:
-# - figure out how to handle soft aces (11 vs 1)
+## TODO: ...
+# - figure out how to handle soft aces - soft means at least one ace is 11 not 1)
 # - handle incorrect inputs (eg check type.. http://www.tldp.org/LDP/LG/issue83/evans.html)
 # - handle blackjacks vs 21
 # - handle double-down and splits
@@ -50,15 +50,35 @@ player_hand_split = pydealer.Stack()
 dealer_hand = pydealer.Stack()
 
 def hand_value(hand):
-    v = 0
+    value = 0
+    aces_count = 0
+    values_array= []
+    best_value = 0
     for card in hand:
-        v += BLACKJACK_RANKS[card.value]
-    return v
+        value += BLACKJACK_RANKS[card.value]
+        if card.value == "Ace":
+            aces_count += 1
+    values_array.append(value)
+    best_value = value
+    counter = aces_count
+    while counter > 0:
+        value -= 10
+        values_array.append(value)
+        if best_value > 21:
+            best_value = value
+        counter -= 1
+    return { "best_value" : best_value, "possible_values" : values_array }
 
 def hand_str(hand):
-    s = " "
-    for card in hand:
-        s += ( " " + str(card) )
+    return ', '.join( map(str, hand) )
+
+def hand_value_str(hand):
+    a = hand_value(hand)
+    s = str(a["best_value"])
+    if len(a["possible_values"]) > 1:
+        s += " [possible values with aces: "
+        s += ', '.join( map(str, a["possible_values"]) )
+        s = s + "]"
     return s
 
 
@@ -66,7 +86,7 @@ player_bank = 1000
 initial_bet = 0
 continue_game = True
 
-print "\n***Blackjack***"
+print "\n*** Blackjack ***"
 
 
 while(continue_game == True):
@@ -83,7 +103,7 @@ while(continue_game == True):
         if initial_bet > player_bank:
             print "You can't bet more money than you have in the bank!"
             continue
-        elif initial_bet == 0:
+        elif initial_bet == 0 or initial_bet < 0:
             print "You need to bet something to play!"
             continue
         else: player_bank = player_bank - initial_bet
@@ -92,8 +112,8 @@ while(continue_game == True):
     player_hand = stack.deal(num = 2, end = 'top')
     dealer_hand = stack.deal(num = 2, end = 'top')
 
-    print "Your hand:" + hand_str(player_hand) + ".  Total = " + str(hand_value(player_hand))
-    print "Dealer upcard: " + str(dealer_hand[0]) + ". Total = " + str(dealer_hand[0].value)
+    print "Your hand: " + hand_str(player_hand) + ". Total = " + hand_value_str(player_hand)
+    print "Dealer upcard: " + str(dealer_hand[0]) + ". Total = " + str(BLACKJACK_RANKS[ dealer_hand[0].value ])
 
 
 
@@ -103,11 +123,12 @@ while(continue_game == True):
     has_player_doubled = False
 
     while(end_player_turn == False):
+        player_hand_value = hand_value(player_hand)
         # check if double-down or split is possible:
-        if hand_value(player_hand) > 21:
+        if player_hand_value["best_value"] > 21:
              print "YOU ARE BUST!"
              end_player_turn = True
-        elif hand_value(player_hand) == 21:
+        elif player_hand_value["best_value"] == 21:
             end_player_turn = True
             if player_hand.size == 2:
                 print "Your hand: Blackjack!"
@@ -125,26 +146,28 @@ while(continue_game == True):
         #    double after split is possible
             else:
                 print "please just type a letter"
-        print "Your hand:" + hand_str(player_hand) + ".  Total = " + str(hand_value(player_hand))
+        print "Your hand: " + hand_str(player_hand) + ". Total = " + hand_value_str(player_hand)
 
 
     time.sleep(1)
 
 
     # dealer turn:
-
+    print ""
     end_dealer_turn = False
 
     while(end_dealer_turn == False):
-        if hand_value(player_hand) > 21: break
-        print "Dealer hand:" + hand_str(dealer_hand) + ".  Total = " + str(hand_value(dealer_hand))
+        dealer_hand_value = hand_value(dealer_hand)
+        if dealer_hand_value["best_value"] > 21: break
+        print "Dealer hand: " + hand_str(dealer_hand) + ". Total = " + hand_value_str(dealer_hand)
         # if all player hands are bust, skip
-        if hand_value(dealer_hand) > 21:
+        if dealer_hand_value["best_value"] > 21:
             print "DEALER IS BUST!"
             end_dealer_turn = True
-        elif hand_value(dealer_hand) < 17:
+        elif dealer_hand_value["best_value"] < 17:
             print "Dealer hits."
             dealer_hand += stack.deal(num = 1, end = 'top')
+            print "Dealer hand: " + hand_str(dealer_hand) + ". Total = " + hand_value_str(dealer_hand)
         else:
             print "Dealer stands."
             end_dealer_turn = True
@@ -152,23 +175,25 @@ while(continue_game == True):
 
 
     # who won:
+    player_hand_value = hand_value(player_hand)
+    dealer_hand_value = hand_value(dealer_hand)
 
-    if hand_value(player_hand) > 21:
+    if player_hand_value["best_value"] > 21:
         print "You lose (You are bust)"
-    elif hand_value(dealer_hand) > 21:
+    elif dealer_hand_value["best_value"] > 21:
         print "You win (Dealer is bust)"
         player_bank += (initial_bet * 2)
-    elif hand_value(player_hand) > hand_value(dealer_hand):
-        print "You win (" + str(hand_value(player_hand)) + " beats " + str(hand_value(dealer_hand)) + ")"
-        if player_hand.size == 2 and hand_value(player_hand) == 21:
+    elif player_hand_value["best_value"] > dealer_hand_value["best_value"]:
+        print "You win (" + hand_value_str(player_hand) + " beats " + hand_value_str(dealer_hand) + ")"
+        if player_hand.size == 2 and player_hand_value["best_value"] == 21:
             print "BLACKJACK! (Pays 3:2)"
             player_bank += int(initial_bet * 2.5)
         else:
             player_bank += (initial_bet * 2)
-    elif hand_value(player_hand) < hand_value(dealer_hand):
-        print "You lose (" + str(hand_value(player_hand)) + " loses to " + str(hand_value(dealer_hand)) + ")"
-    elif hand_value(player_hand) == hand_value(dealer_hand):
-        print "Tie/Push (you and dealer both have " + str(hand_value(player_hand)) + ")"
+    elif player_hand_value["best_value"] < dealer_hand_value["best_value"]:
+        print "You lose (" + hand_value_str(player_hand) + " loses to " + hand_value_str(dealer_hand) + ")"
+    elif player_hand_value["best_value"] == dealer_hand_value["best_value"]:
+        print "Push (you and dealer both have " + hand_value_str(player_hand) + ")"
         player_bank += initial_bet
     else:
         print "Something went wrong"
